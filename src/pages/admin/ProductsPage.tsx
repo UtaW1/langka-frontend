@@ -118,6 +118,12 @@ export function ProductsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (!form.categoryId) {
+      toast.error('Please select a category.')
+      return
+    }
+
     const parsedPrice = Number(form.price)
     if (!Number.isFinite(parsedPrice) || parsedPrice < 0.1) {
       toast.error('Price must be at least 0.10 USD.')
@@ -349,29 +355,29 @@ export function ProductsPage() {
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-stone-700">Category</label>
-            <select
-              value={form.categoryId}
-              onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-coffee-400"
-              required
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-stone-700">
-            <input
-              type="checkbox"
-              checked={form.available}
-              onChange={(e) => setForm((f) => ({ ...f, available: e.target.checked }))}
-              className="rounded"
-            />
-            Available
-          </label>
+          <FilterSelect
+            label="Category"
+            value={form.categoryId}
+            onChange={(next) => setForm((f) => ({ ...f, categoryId: next }))}
+            options={[
+              { value: '', label: 'Select category' },
+              ...categories.map((cat) => ({
+                value: cat.id,
+                label: cat.name,
+              })),
+            ]}
+          />
+          {editTarget && (
+            <label className="flex items-center gap-2 text-sm text-stone-700">
+              <input
+                type="checkbox"
+                checked={form.available}
+                onChange={(e) => setForm((f) => ({ ...f, available: e.target.checked }))}
+                className="rounded"
+              />
+              Available
+            </label>
+          )}
           <div className="flex flex-wrap justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 interface FilterSelectOption {
   value: string
@@ -17,6 +18,10 @@ interface FilterSelectProps {
 export function FilterSelect({ id, label, value, onChange, options }: FilterSelectProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [menuStyle, setMenuStyle] = useState<{ top: number; left: number; width: number } | null>(null)
+  const shouldScroll = options.length > 6
 
   const selectedLabel = useMemo(
     () => options.find((option) => option.value === value)?.label ?? options[0]?.label ?? '',
@@ -25,7 +30,11 @@ export function FilterSelect({ id, label, value, onChange, options }: FilterSele
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node
+      const clickedInsideTrigger = rootRef.current?.contains(target)
+      const clickedInsideMenu = menuRef.current?.contains(target)
+
+      if (!clickedInsideTrigger && !clickedInsideMenu) {
         setOpen(false)
       }
     }
@@ -45,6 +54,25 @@ export function FilterSelect({ id, label, value, onChange, options }: FilterSele
     }
   }, [])
 
+  useEffect(() => {
+    if (!open) return
+
+    function updatePosition() {
+      const rect = triggerRef.current?.getBoundingClientRect()
+      if (!rect) return
+      setMenuStyle({ top: rect.bottom + 6, left: rect.left, width: rect.width })
+    }
+
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [open])
+
   return (
     <div className="flex flex-col gap-1" ref={rootRef}>
       <label htmlFor={id} className="text-sm font-medium text-stone-700">
@@ -53,6 +81,7 @@ export function FilterSelect({ id, label, value, onChange, options }: FilterSele
 
       <div className="relative">
         <button
+          ref={triggerRef}
           id={id}
           type="button"
           onClick={() => setOpen((prev) => !prev)}
@@ -69,38 +98,52 @@ export function FilterSelect({ id, label, value, onChange, options }: FilterSele
           />
         </button>
 
-        {open && (
-          <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg">
-            <ul className="max-h-60 overflow-y-auto p-1" role="listbox" aria-labelledby={id}>
-              {options.map((option) => {
-                const selected = option.value === value
+        {open && menuStyle
+          ? createPortal(
+              <div
+                ref={menuRef}
+                className="fixed z-[70] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+                style={{ top: menuStyle.top, left: menuStyle.left, width: menuStyle.width }}
+              >
+                <ul
+                  className={[
+                    'p-1',
+                    shouldScroll ? 'max-h-60 overflow-y-auto pr-1' : 'overflow-y-hidden',
+                  ].join(' ')}
+                  role="listbox"
+                  aria-labelledby={id}
+                >
+                  {options.map((option) => {
+                    const selected = option.value === value
 
-                return (
-                  <li key={option.value}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onChange(option.value)
-                        setOpen(false)
-                      }}
-                      className={[
-                        'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
-                        selected
-                          ? 'bg-coffee-50 font-medium text-coffee-800'
-                          : 'text-stone-700 hover:bg-stone-50',
-                      ].join(' ')}
-                      role="option"
-                      aria-selected={selected}
-                    >
-                      <span>{option.label}</span>
-                      {selected ? <Check className="h-4 w-4" /> : null}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        )}
+                    return (
+                      <li key={option.value}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onChange(option.value)
+                            setOpen(false)
+                          }}
+                          className={[
+                            'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
+                            selected
+                              ? 'bg-coffee-50 font-medium text-coffee-800'
+                              : 'text-stone-700 hover:bg-stone-50',
+                          ].join(' ')}
+                          role="option"
+                          aria-selected={selected}
+                        >
+                          <span>{option.label}</span>
+                          {selected ? <Check className="h-4 w-4" /> : null}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>,
+              document.body,
+            )
+          : null}
       </div>
     </div>
   )

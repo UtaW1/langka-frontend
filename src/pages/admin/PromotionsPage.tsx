@@ -9,14 +9,22 @@ import {
 import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { FilterSelect } from '@/components/FilterSelect'
 import { Modal } from '@/components/Modal'
 import { formatDate } from '@/utils'
 import { toIsoRange } from '@/utils/dateRange'
 import type { CreatePromotionRequest, Promotion } from '@/types'
+import toast from 'react-hot-toast'
 
-const EMPTY_FORM: CreatePromotionRequest = {
-  transaction_count_to_get_discount: 5,
-  discount_as_percent: 10,
+interface PromotionFormState {
+  transactionCountToGetDiscount: string
+  discountAsPercent: string
+  status: 'active' | 'inactive'
+}
+
+const EMPTY_FORM: PromotionFormState = {
+  transactionCountToGetDiscount: '',
+  discountAsPercent: '',
   status: 'active',
 }
 
@@ -24,7 +32,7 @@ export function PromotionsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Promotion | null>(null)
   const [removeTarget, setRemoveTarget] = useState<Promotion | null>(null)
-  const [form, setForm] = useState<CreatePromotionRequest>(EMPTY_FORM)
+  const [form, setForm] = useState<PromotionFormState>(EMPTY_FORM)
   const [startDatetime, setStartDatetime] = useState('')
   const [endDatetime, setEndDatetime] = useState('')
 
@@ -44,8 +52,8 @@ export function PromotionsPage() {
   function openEdit(promotion: Promotion) {
     setEditTarget(promotion)
     setForm({
-      transaction_count_to_get_discount: promotion.transactionCountToGetDiscount,
-      discount_as_percent: promotion.discountAsPercent,
+      transactionCountToGetDiscount: String(promotion.transactionCountToGetDiscount),
+      discountAsPercent: String(promotion.discountAsPercent),
       status: promotion.status,
     })
     setModalOpen(true)
@@ -53,10 +61,30 @@ export function PromotionsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    const transactionCount = Number(form.transactionCountToGetDiscount)
+    const discountPercent = Number(form.discountAsPercent)
+
+    if (!Number.isFinite(transactionCount) || transactionCount < 1) {
+      toast.error('Transactions needed must be at least 1.')
+      return
+    }
+
+    if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+      toast.error('Discount must be between 0 and 100.')
+      return
+    }
+
+    const payload: CreatePromotionRequest = {
+      transaction_count_to_get_discount: Math.trunc(transactionCount),
+      discount_as_percent: discountPercent,
+      status: form.status,
+    }
+
     if (editTarget) {
-      await updatePromotion.mutateAsync({ id: editTarget.id, data: form })
+      await updatePromotion.mutateAsync({ id: editTarget.id, data: payload })
     } else {
-      await createPromotion.mutateAsync(form)
+      await createPromotion.mutateAsync(payload)
     }
     setModalOpen(false)
   }
@@ -180,13 +208,10 @@ export function PromotionsPage() {
             label="Transactions Needed"
             type="number"
             min="1"
-            value={form.transaction_count_to_get_discount}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                transaction_count_to_get_discount: parseInt(e.target.value, 10) || 1,
-              }))
-            }
+            step="1"
+            value={form.transactionCountToGetDiscount}
+            onChange={(e) => setForm((prev) => ({ ...prev, transactionCountToGetDiscount: e.target.value }))}
+            placeholder="e.g. 5"
             required
           />
           <Input
@@ -195,31 +220,20 @@ export function PromotionsPage() {
             min="0"
             max="100"
             step="0.01"
-            value={form.discount_as_percent}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                discount_as_percent: parseFloat(e.target.value) || 0,
-              }))
-            }
+            value={form.discountAsPercent}
+            onChange={(e) => setForm((prev) => ({ ...prev, discountAsPercent: e.target.value }))}
+            placeholder="e.g. 10"
             required
           />
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-stone-700">Status</label>
-            <select
-              value={form.status}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  status: e.target.value as 'active' | 'inactive',
-                }))
-              }
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-coffee-400"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
+          <FilterSelect
+            label="Status"
+            value={form.status}
+            onChange={(next) => setForm((prev) => ({ ...prev, status: next as 'active' | 'inactive' }))}
+            options={[
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+            ]}
+          />
           <div className="flex flex-wrap justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel

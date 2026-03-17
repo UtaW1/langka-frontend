@@ -97,7 +97,12 @@ function MetricBarChart({
       ) : (
         <div className="space-y-3">
           {visibleItems.map((item) => {
-            const width = maxValue > 0 ? Math.max((item.value / maxValue) * 100, 6) : 6
+            const width =
+              maxValue > 0
+                ? item.value > 0
+                  ? Math.max((item.value / maxValue) * 100, 6)
+                  : 0
+                : 0
 
             return (
               <div key={item.id}>
@@ -261,7 +266,7 @@ function PromotionProgressionCard({
                   {item.currentProgressCount}/{target} completed
                   {item.willHaveDiscountOnNextOrder
                     ? ' • Discount ready now'
-                    : ` • ${item.remainingOrdersBeforeDiscount} more to unlock`}
+                    : ` • ${item.remainingOrdersBeforeDiscount} more to be eligible for promotion`}
                 </p>
               </div>
             )
