@@ -143,10 +143,6 @@ function EmployeeMonthlyMetricCard({
 }) {
   const [showAll, setShowAll] = useState(false)
   const visibleItems = showAll ? items : items.slice(0, 5)
-  const maxTotal =
-    items.length > 0
-      ? Math.max(...items.map((item) => item.completedOrders + item.cancelledOrders))
-      : 0
 
   return (
     <Card>
@@ -167,7 +163,6 @@ function EmployeeMonthlyMetricCard({
         <div className="space-y-3">
           {visibleItems.map((item) => {
             const total = item.completedOrders + item.cancelledOrders
-            const totalWidth = maxTotal > 0 ? Math.max((total / maxTotal) * 100, 8) : 8
             const completedRatio = total > 0 ? (item.completedOrders / total) * 100 : 0
             const cancelledRatio = total > 0 ? (item.cancelledOrders / total) * 100 : 0
 
@@ -178,7 +173,7 @@ function EmployeeMonthlyMetricCard({
                   <p className="text-xs font-semibold text-stone-500">{total.toLocaleString()} orders</p>
                 </div>
 
-                <div className="h-2.5 overflow-hidden rounded-full bg-stone-100" style={{ width: `${totalWidth}%` }}>
+                <div className="h-2.5 overflow-hidden rounded-full bg-stone-100">
                   <div className="flex h-full w-full">
                     <div className="h-full bg-green-500" style={{ width: `${completedRatio}%` }} />
                     <div className="h-full bg-red-400" style={{ width: `${cancelledRatio}%` }} />
@@ -404,13 +399,13 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 md:p-8">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-8">
         <div>
           <h1 className="font-serif text-2xl font-semibold text-stone-800">Overview</h1>
           <p className="mt-1 text-sm text-stone-400">Window: {periodLabel}</p>
         </div>
 
-        <div className="w-full max-w-xs">
+        <div className="mt-4 w-full max-w-xs">
           <FilterSelect
             label="Filter Overview By"
             value={datePreset}
