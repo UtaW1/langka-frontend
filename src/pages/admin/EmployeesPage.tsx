@@ -11,6 +11,7 @@ import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
 import { Table, type Column } from '@/components/Table'
 import { formatDate, formatPhone, initials } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import type { CreateEmployeeRequest, Employee } from '@/types'
 
 const EMPTY_FORM: CreateEmployeeRequest = {
@@ -23,8 +24,10 @@ export function EmployeesPage() {
   const [editTarget, setEditTarget] = useState<Employee | null>(null)
   const [form, setForm] = useState<CreateEmployeeRequest>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null)
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
-  const { data, isLoading } = useEmployees()
+  const { data, isLoading } = useEmployees(toIsoRange(startDatetime, endDatetime))
   const createEmployee = useCreateEmployee()
   const updateEmployee = useUpdateEmployee()
   const deleteEmployee = useDeleteEmployee()
@@ -114,6 +117,27 @@ export function EmployeesPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add employee
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter employees by inserted date range.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={startDatetime}
+            onChange={(e) => setStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={endDatetime}
+            onChange={(e) => setEndDatetime(e.target.value)}
+          />
+        </div>
       </div>
 
       <Table

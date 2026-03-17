@@ -7,6 +7,7 @@ import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { FilterSelect } from '@/components/FilterSelect'
 import { formatPrice, formatDate, formatPhone } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import type { Transaction } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -18,15 +19,19 @@ function toDatetimeLocalValue(date: Date): string {
 export function TransactionsPage() {
   const [statusFilter, setStatusFilter] = useState<'pending' | 'completed' | 'cancelled' | ''>('')
   const [employeeIdFilter, setEmployeeIdFilter] = useState('')
+  const [listingStartDatetime, setListingStartDatetime] = useState('')
+  const [listingEndDatetime, setListingEndDatetime] = useState('')
   const [pageNumber, setPageNumber] = useState(0)
   const pageSize = 16
 
   const { data: employeesData } = useEmployees()
+  const listingRange = toIsoRange(listingStartDatetime, listingEndDatetime)
   const { data, isLoading } = useTransactions({
     status: statusFilter || undefined,
     employee_id: employeeIdFilter || undefined,
     page_number: pageNumber,
     page_size: pageSize,
+    ...listingRange,
   })
   const exportReport = useExportTransactionsReport()
   const transactions = data?.data ?? []
@@ -65,7 +70,7 @@ export function TransactionsPage() {
 
   useEffect(() => {
     setPageNumber(0)
-  }, [statusFilter, employeeIdFilter])
+  }, [statusFilter, employeeIdFilter, listingStartDatetime, listingEndDatetime])
 
   async function handleExportReport() {
     if (!startDatetime || !endDatetime) {
@@ -262,6 +267,20 @@ export function TransactionsPage() {
                 label: employee.name,
               })),
             ]}
+          />
+
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={listingStartDatetime}
+            onChange={(e) => setListingStartDatetime(e.target.value)}
+          />
+
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={listingEndDatetime}
+            onChange={(e) => setListingEndDatetime(e.target.value)}
           />
         </div>
       </div>

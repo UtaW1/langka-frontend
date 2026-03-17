@@ -13,6 +13,7 @@ import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
 import { Table, type Column } from '@/components/Table'
 import { formatDate } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import { usePublicBucketAsset } from '@/hooks/usePublicBucketAsset'
 import type { CreateInventoryRequest, Inventory, MovementType } from '@/types'
 import toast from 'react-hot-toast'
@@ -238,8 +239,10 @@ export function InventoryPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Inventory | null>(null)
   const [movementsTarget, setMovementsTarget] = useState<Inventory | null>(null)
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
-  const { data, isLoading } = useInventories()
+  const { data, isLoading } = useInventories(toIsoRange(startDatetime, endDatetime))
   const createInventory = useCreateInventory()
   const updateInventory = useUpdateInventory()
   const deleteInventory = useDeleteInventory()
@@ -362,6 +365,27 @@ export function InventoryPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add item
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter inventory items by inserted date range.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={startDatetime}
+            onChange={(e) => setStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={endDatetime}
+            onChange={(e) => setEndDatetime(e.target.value)}
+          />
+        </div>
       </div>
 
       <Table

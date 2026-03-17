@@ -1,6 +1,7 @@
 import apiClient from './client'
 import type {
   EmployeeMonthlyMetric,
+  PaginationParams,
   ProductMonthlyMetric,
   PromotionProgressionMetric,
   PromotionUsageMetric,
@@ -56,12 +57,12 @@ function normalizePromotionProgressionMetric(raw: any): PromotionProgressionMetr
 }
 
 export const metricsApi = {
-  listProductMonthly: async () => {
+  listProductMonthly: async (params?: Pick<PaginationParams, 'start_datetime' | 'end_datetime'>) => {
     const endpoints = ['/admin/metrics/product_monthly', '/metrics/product_monthly']
 
     for (const endpoint of endpoints) {
       try {
-        const r = await apiClient.get<any>(endpoint)
+        const r = await apiClient.get<any>(endpoint, { params })
         const arr = Array.isArray(r.data) ? r.data : (r.data.data ?? [])
         return arr.map(normalizeProductMonthlyMetric)
       } catch (error: any) {
@@ -74,12 +75,12 @@ export const metricsApi = {
     throw new Error('Product monthly metrics endpoint not found.')
   },
 
-  listTableMonthly: async () => {
+  listTableMonthly: async (params?: Pick<PaginationParams, 'start_datetime' | 'end_datetime'>) => {
     const endpoints = ['/admin/metrics/table_monthly', '/metrics/table_monthly']
 
     for (const endpoint of endpoints) {
       try {
-        const r = await apiClient.get<any>(endpoint)
+        const r = await apiClient.get<any>(endpoint, { params })
         const arr = Array.isArray(r.data) ? r.data : (r.data.data ?? [])
         return arr.map(normalizeTableMonthlyMetric)
       } catch (error: any) {
@@ -92,12 +93,12 @@ export const metricsApi = {
     throw new Error('Table monthly metrics endpoint not found.')
   },
 
-  listEmployeeMonthly: async () => {
+  listEmployeeMonthly: async (params?: Pick<PaginationParams, 'start_datetime' | 'end_datetime'>) => {
     const endpoints = ['/admin/metrics/employee_monthly', '/metrics/employee_monthly']
 
     for (const endpoint of endpoints) {
       try {
-        const r = await apiClient.get<any>(endpoint)
+        const r = await apiClient.get<any>(endpoint, { params })
         const arr = Array.isArray(r.data) ? r.data : (r.data.data ?? [])
         return arr.map(normalizeEmployeeMonthlyMetric)
       } catch (error: any) {
@@ -110,12 +111,12 @@ export const metricsApi = {
     throw new Error('Employee monthly metrics endpoint not found.')
   },
 
-  listPromotionUsage: async () => {
+  listPromotionUsage: async (params?: Pick<PaginationParams, 'start_datetime' | 'end_datetime'>) => {
     const endpoints = ['/admin/metrics/promotion_usage', '/metrics/promotion_usage']
 
     for (const endpoint of endpoints) {
       try {
-        const r = await apiClient.get<any>(endpoint)
+        const r = await apiClient.get<any>(endpoint, { params })
         const arr = Array.isArray(r.data) ? r.data : (r.data.data ?? [])
         return arr.map(normalizePromotionUsageMetric)
       } catch (error: any) {
@@ -128,12 +129,12 @@ export const metricsApi = {
     throw new Error('Promotion usage metrics endpoint not found.')
   },
 
-  listPromotionProgression: async () => {
+  listPromotionProgression: async (params?: Pick<PaginationParams, 'start_datetime' | 'end_datetime'>) => {
     const endpoints = ['/admin/metrics/promotion_progression', '/metrics/promotion_progression']
 
     for (const endpoint of endpoints) {
       try {
-        const r = await apiClient.get<any>(endpoint)
+        const r = await apiClient.get<any>(endpoint, { params })
         const arr = Array.isArray(r.data) ? r.data : (r.data.data ?? [])
         return arr.map(normalizePromotionProgressionMetric)
       } catch (error: any) {

@@ -10,6 +10,7 @@ import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
+import { toIsoRange } from '@/utils/dateRange'
 import type { Category, CreateCategoryRequest } from '@/types'
 
 const EMPTY_FORM: CreateCategoryRequest = { name: '', description: ''}
@@ -19,8 +20,10 @@ export function CategoriesPage() {
   const [editTarget, setEditTarget] = useState<Category | null>(null)
   const [form, setForm] = useState<CreateCategoryRequest>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
-  const { data, isLoading } = useCategories()
+  const { data, isLoading } = useCategories(toIsoRange(startDatetime, endDatetime))
   const createCategory = useCreateCategory()
   const updateCategory = useUpdateCategory()
   const deleteCategory = useDeleteCategory()
@@ -98,6 +101,27 @@ export function CategoriesPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add category
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter categories by inserted date range.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={startDatetime}
+            onChange={(e) => setStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={endDatetime}
+            onChange={(e) => setEndDatetime(e.target.value)}
+          />
+        </div>
       </div>
 
       <Table

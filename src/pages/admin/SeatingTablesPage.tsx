@@ -12,6 +12,7 @@ import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
 import { Table, type Column } from '@/components/Table'
 import { formatDate, formatPrice } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import type { CreateSeatingTableRequest, SeatingTable, SeatingTableTransactions } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -27,9 +28,12 @@ export function SeatingTablesPage() {
   const [deleteTarget, setDeleteTarget] = useState<SeatingTable | null>(null)
   const [transactionsTarget, setTransactionsTarget] = useState<SeatingTableTransactions | null>(null)
   const [qrTarget, setQrTarget] = useState<SeatingTable | null>(null)
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
-  const { data, isLoading } = useSeatingTables()
-  const { data: txData } = useSeatingTableTransactions()
+  const listingRange = toIsoRange(startDatetime, endDatetime)
+  const { data, isLoading } = useSeatingTables(listingRange)
+  const { data: txData } = useSeatingTableTransactions(listingRange)
   const createSeatingTable = useCreateSeatingTable()
   const updateSeatingTable = useUpdateSeatingTable()
   const deleteSeatingTable = useDeleteSeatingTable()
@@ -176,6 +180,27 @@ export function SeatingTablesPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add table
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter seating tables by inserted date range.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={startDatetime}
+            onChange={(e) => setStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={endDatetime}
+            onChange={(e) => setEndDatetime(e.target.value)}
+          />
+        </div>
       </div>
 
       <Table

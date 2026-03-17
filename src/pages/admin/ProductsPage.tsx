@@ -8,6 +8,7 @@ import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
 import { FilterSelect } from '@/components/FilterSelect'
 import { formatPrice } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import type { Product, CreateProductRequest } from '@/types'
 import { usePublicBucketAsset } from '../../hooks/usePublicBucketAsset'
 import toast from 'react-hot-toast'
@@ -55,9 +56,13 @@ export function ProductsPage() {
   const [form, setForm] = useState<ProductFormState>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
   const [removedFilter, setRemovedFilter] = useState<RemovedFilterValue>('all')
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
   const isRemovedFilter =
     removedFilter === 'active' ? 'no' : removedFilter === 'removed' ? 'yes' : null
+
+  const listingRange = toIsoRange(startDatetime, endDatetime)
 
   const {
     data,
@@ -65,7 +70,7 @@ export function ProductsPage() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useInfiniteProducts({ isRemoved: isRemovedFilter })
+  } = useInfiniteProducts({ isRemoved: isRemovedFilter, ...listingRange })
   const { data: catData } = useCategories()
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
@@ -234,18 +239,36 @@ export function ProductsPage() {
           <p className="text-xs text-stone-500">These filters apply to the product table only.</p>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <FilterSelect
-            id="product-removed-filter"
-            label="Filter by Visibility"
-            value={removedFilter}
-            onChange={(next) => setRemovedFilter(next as RemovedFilterValue)}
-            options={[
-              { value: 'all', label: 'All products' },
-              { value: 'active', label: 'Available only' },
-              { value: 'removed', label: 'Removed only' },
-            ]}
-          />
+        <div className="space-y-3">
+          <div className="max-w-md">
+            <FilterSelect
+              id="product-removed-filter"
+              label="Filter by Visibility"
+              value={removedFilter}
+              onChange={(next) => setRemovedFilter(next as RemovedFilterValue)}
+              options={[
+                { value: 'all', label: 'All products' },
+                { value: 'active', label: 'Available only' },
+                { value: 'removed', label: 'Removed only' },
+              ]}
+            />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input
+              label="Start Date & Time"
+              type="datetime-local"
+              value={startDatetime}
+              onChange={(e) => setStartDatetime(e.target.value)}
+            />
+
+            <Input
+              label="End Date & Time"
+              type="datetime-local"
+              value={endDatetime}
+              onChange={(e) => setEndDatetime(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

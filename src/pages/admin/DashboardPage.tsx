@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Users, ShoppingBag, CreditCard, TrendingUp, UserCheck } from 'lucide-react'
 import { useOrders } from '@/hooks/useOrders'
 import { useUsers } from '@/hooks/useUsers'
@@ -14,6 +14,8 @@ import {
 } from '@/hooks/useMetrics'
 import { formatPrice } from '@/utils'
 import { Card } from '@/components/Card'
+import { FilterSelect } from '@/components/FilterSelect'
+import { getPresetDateRange, type DatePreset } from '@/utils/dateRange'
 import type {
   EmployeeMonthlyMetric,
   ProductMonthlyMetric,
@@ -288,20 +290,32 @@ function PromotionProgressionCard({
 }
 
 export function DashboardPage() {
-  const { data: ordersData } = useOrders({ limit: 1 })
-  const { data: usersData } = useUsers({ limit: 1 })
-  const { data: employeesData } = useEmployees()
-  const { data: txData } = useTransactions({ limit: 100 })
-  const { data: productsData } = useProducts({ limit: 1 })
-  const { data: productMetrics, isLoading: isProductMetricsLoading } = useProductMonthlyMetrics()
-  const { data: tableMetrics, isLoading: isTableMetricsLoading } = useTableMonthlyMetrics()
-  const { data: employeeMetrics, isLoading: isEmployeeMetricsLoading } = useEmployeeMonthlyMetrics()
+  const [datePreset, setDatePreset] = useState<DatePreset>('today')
+
+  const overviewRange = useMemo(() => getPresetDateRange(datePreset), [datePreset])
+  const periodLabel =
+    datePreset === 'today'
+      ? 'Today'
+      : datePreset === 'weekly'
+      ? 'Weekly'
+      : datePreset === 'monthly'
+      ? 'Monthly'
+      : 'Yearly'
+
+  const { data: ordersData } = useOrders({ limit: 1, ...overviewRange })
+  const { data: usersData } = useUsers({ limit: 1, ...overviewRange })
+  const { data: employeesData } = useEmployees(overviewRange)
+  const { data: txData } = useTransactions({ limit: 1000, ...overviewRange })
+  const { data: productsData } = useProducts({ limit: 1, ...overviewRange })
+  const { data: productMetrics, isLoading: isProductMetricsLoading } = useProductMonthlyMetrics(overviewRange)
+  const { data: tableMetrics, isLoading: isTableMetricsLoading } = useTableMonthlyMetrics(overviewRange)
+  const { data: employeeMetrics, isLoading: isEmployeeMetricsLoading } = useEmployeeMonthlyMetrics(overviewRange)
   const { data: promotionUsageMetrics, isLoading: isPromotionUsageMetricsLoading } =
-    usePromotionUsageMetrics()
+    usePromotionUsageMetrics(overviewRange)
   const {
     data: promotionProgressionMetrics,
     isLoading: isPromotionProgressionMetricsLoading,
-  } = usePromotionProgressionMetrics()
+  } = usePromotionProgressionMetrics(overviewRange)
 
   const totalRevenue = txData?.data?.reduce((sum, tx) => sum + tx.billPriceUsd, 0) ?? 0
   const recentOrders = ordersData?.total ?? 0
@@ -315,7 +329,7 @@ export function DashboardPage() {
       icon: <TrendingUp className="h-5 w-5" />,
       label: 'Total Revenue',
       value: formatPrice(totalRevenue),
-      sub: 'All transactions',
+      sub: `${periodLabel} window`,
       iconBg: 'bg-green-50',
       iconColor: 'text-green-600',
     },
@@ -323,7 +337,7 @@ export function DashboardPage() {
       icon: <ShoppingBag className="h-5 w-5" />,
       label: 'Total Orders',
       value: recentOrders,
-      sub: 'All time',
+      sub: `${periodLabel} window`,
       iconBg: 'bg-coffee-50',
       iconColor: 'text-coffee-700',
     },
@@ -331,7 +345,7 @@ export function DashboardPage() {
       icon: <Users className="h-5 w-5" />,
       label: 'Total Users',
       value: totalUsers,
-      sub: 'Registered',
+      sub: `${periodLabel} window`,
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
     },
@@ -339,7 +353,7 @@ export function DashboardPage() {
       icon: <UserCheck className="h-5 w-5" />,
       label: 'Active Employees',
       value: totalActiveEmployees,
-      sub: 'Currently active',
+      sub: `${periodLabel} window`,
       iconBg: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
     },
@@ -347,7 +361,7 @@ export function DashboardPage() {
       icon: <CreditCard className="h-5 w-5" />,
       label: 'Products',
       value: totalProducts,
-      sub: 'On menu',
+      sub: `${periodLabel} window`,
       iconBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
     },
@@ -390,9 +404,25 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 md:p-8">
-      <div className="mb-8">
-        <h1 className="font-serif text-2xl font-semibold text-stone-800">Overview</h1>
-        <p className="mt-1 text-sm text-stone-400">Welcome back, here's what's happening today.</p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-serif text-2xl font-semibold text-stone-800">Overview</h1>
+          <p className="mt-1 text-sm text-stone-400">Window: {periodLabel}</p>
+        </div>
+
+        <div className="w-full max-w-xs">
+          <FilterSelect
+            label="Filter Overview By"
+            value={datePreset}
+            onChange={(next) => setDatePreset(next as DatePreset)}
+            options={[
+              { value: 'today', label: 'Today' },
+              { value: 'weekly', label: 'Weekly' },
+              { value: 'monthly', label: 'Monthly' },
+              { value: 'yearly', label: 'Yearly' },
+            ]}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -404,21 +434,21 @@ export function DashboardPage() {
       <div className="mt-7 grid gap-4 lg:grid-cols-3">
         <MetricBarChart
           title="Most Bought Products"
-          subtitle="Current month ranking"
+          subtitle={`${periodLabel} ranking`}
           valueLabel="orders"
           items={productChartItems}
           loading={isProductMetricsLoading}
-          emptyMessage="No product metrics available for this month."
+          emptyMessage={`No product metrics available for this ${periodLabel.toLowerCase()} window.`}
           barClassName="bg-gradient-to-r from-coffee-500 to-amber-400"
         />
 
         <MetricBarChart
           title="Most Used Tables"
-          subtitle="Current month ranking"
+          subtitle={`${periodLabel} ranking`}
           valueLabel="uses"
           items={tableChartItems}
           loading={isTableMetricsLoading}
-          emptyMessage="No table metrics available for this month."
+          emptyMessage={`No table metrics available for this ${periodLabel.toLowerCase()} window.`}
           barClassName="bg-gradient-to-r from-blue-500 to-cyan-400"
         />
 

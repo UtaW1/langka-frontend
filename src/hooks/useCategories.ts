@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { categoriesApi } from '@/api/categories'
-import type { CreateCategoryRequest } from '@/types'
+import type { CreateCategoryRequest, PaginationParams } from '@/types'
 
 export const CATEGORIES_KEY = 'categories'
 
-export function useCategories() {
+export function useCategories(params?: PaginationParams) {
   return useQuery({
-    queryKey: [CATEGORIES_KEY],
-    queryFn: () => categoriesApi.list(),
+    queryKey: [CATEGORIES_KEY, params],
+    queryFn: () => categoriesApi.list(params),
   })
 }
 

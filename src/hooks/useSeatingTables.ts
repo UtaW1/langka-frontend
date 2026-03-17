@@ -1,22 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { seatingTablesApi } from '@/api/seatingTables'
-import type { CreateSeatingTableRequest, UpdateSeatingTableRequest } from '@/types'
+import type { CreateSeatingTableRequest, PaginationParams, UpdateSeatingTableRequest } from '@/types'
 
 export const SEATING_TABLES_KEY = 'seating_tables'
 export const SEATING_TABLE_TRANSACTIONS_KEY = 'seating_table_transactions'
 
-export function useSeatingTables() {
+export function useSeatingTables(params?: PaginationParams) {
   return useQuery({
-    queryKey: [SEATING_TABLES_KEY],
-    queryFn: () => seatingTablesApi.list(),
+    queryKey: [SEATING_TABLES_KEY, params],
+    queryFn: () => seatingTablesApi.list(params),
   })
 }
 
-export function useSeatingTableTransactions() {
+export function useSeatingTableTransactions(params?: PaginationParams) {
   return useQuery({
-    queryKey: [SEATING_TABLE_TRANSACTIONS_KEY],
-    queryFn: () => seatingTablesApi.listTableTransactions(),
+    queryKey: [SEATING_TABLE_TRANSACTIONS_KEY, params],
+    queryFn: () => seatingTablesApi.listTableTransactions(params),
   })
 }
 

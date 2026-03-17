@@ -339,6 +339,8 @@ export interface PaginationParams {
   page_number?: number
   limit?: number
   search?: string
+  start_datetime?: string
+  end_datetime?: string
 }
 
 export interface PaginatedResponse<T> {

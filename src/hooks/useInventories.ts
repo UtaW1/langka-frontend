@@ -5,16 +5,17 @@ import type {
   CreateInventoryRequest,
   InventoryMovementListParams,
   MovementType,
+  PaginationParams,
   UpdateInventoryRequest,
 } from '@/types'
 
 export const INVENTORIES_KEY = 'inventories'
 export const INVENTORY_MOVEMENTS_KEY = 'inventory_movements'
 
-export function useInventories() {
+export function useInventories(params?: PaginationParams) {
   return useQuery({
-    queryKey: [INVENTORIES_KEY],
-    queryFn: () => inventoriesApi.list(),
+    queryKey: [INVENTORIES_KEY, params],
+    queryFn: () => inventoriesApi.list(params),
   })
 }
 

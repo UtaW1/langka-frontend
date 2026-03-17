@@ -6,6 +6,7 @@ import { Button } from '@/components/Button'
 import { Modal } from '@/components/Modal'
 import { Input } from '@/components/Input'
 import { formatDate, formatPhone, formatPrice, initials } from '@/utils'
+import { toIsoRange } from '@/utils/dateRange'
 import type { User } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -16,8 +17,10 @@ function toDatetimeLocalValue(date: Date): string {
 
 export function UsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const [listingStartDatetime, setListingStartDatetime] = useState('')
+  const [listingEndDatetime, setListingEndDatetime] = useState('')
 
-  const { data, isLoading } = useUsers()
+  const { data, isLoading } = useUsers(toIsoRange(listingStartDatetime, listingEndDatetime))
   const deleteUser = useDeleteUser()
   const exportReport = useExportUsersReport()
 
@@ -150,6 +153,28 @@ export function UsersPage() {
             value={endDatetime}
             onChange={(e) => setEndDatetime(e.target.value)}
             required
+          />
+        </div>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter users by inserted date range.</p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={listingStartDatetime}
+            onChange={(e) => setListingStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={listingEndDatetime}
+            onChange={(e) => setListingEndDatetime(e.target.value)}
           />
         </div>
       </div>

@@ -10,6 +10,7 @@ import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
+import { toIsoRange } from '@/utils/dateRange'
 import type { CreatePromotionRequest, Promotion } from '@/types'
 
 const EMPTY_FORM: CreatePromotionRequest = {
@@ -23,8 +24,10 @@ export function PromotionsPage() {
   const [editTarget, setEditTarget] = useState<Promotion | null>(null)
   const [removeTarget, setRemoveTarget] = useState<Promotion | null>(null)
   const [form, setForm] = useState<CreatePromotionRequest>(EMPTY_FORM)
+  const [startDatetime, setStartDatetime] = useState('')
+  const [endDatetime, setEndDatetime] = useState('')
 
-  const { data, isLoading } = usePromotions()
+  const { data, isLoading } = usePromotions(toIsoRange(startDatetime, endDatetime))
   const createPromotion = useCreatePromotion()
   const updatePromotion = useUpdatePromotion()
   const removePromotion = useRemovePromotion()
@@ -129,6 +132,27 @@ export function PromotionsPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add promotion
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">Filter promotions by inserted date range.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Start Date & Time"
+            type="datetime-local"
+            value={startDatetime}
+            onChange={(e) => setStartDatetime(e.target.value)}
+          />
+          <Input
+            label="End Date & Time"
+            type="datetime-local"
+            value={endDatetime}
+            onChange={(e) => setEndDatetime(e.target.value)}
+          />
+        </div>
       </div>
 
       <Table

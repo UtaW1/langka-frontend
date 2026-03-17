@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { employeesApi } from '@/api/employees'
-import type { CreateEmployeeRequest, UpdateEmployeeRequest } from '@/types'
+import type { CreateEmployeeRequest, PaginationParams, UpdateEmployeeRequest } from '@/types'
 
 export const EMPLOYEES_KEY = 'employees'
 
-export function useEmployees() {
+export function useEmployees(params?: PaginationParams) {
   return useQuery({
-    queryKey: [EMPLOYEES_KEY],
-    queryFn: () => employeesApi.list(),
+    queryKey: [EMPLOYEES_KEY, params],
+    queryFn: () => employeesApi.list(params),
   })
 }
 
