@@ -3,11 +3,22 @@ import type { Category, CreateCategoryRequest, PaginatedResponse, PaginationPara
 import { withPage } from './helper'
 
 function normalize(raw: any): Category {
+  const nestedProducts = Array.isArray(raw.products) ? raw.products.length : undefined
+  const fallbackCount = Number(
+    raw.product_count ??
+      raw.products_count ??
+      raw.total_products ??
+      raw.total_product_count ??
+      0,
+  )
+
   return {
     id: String(raw.id),
     name: raw.name,
     description: raw.description ?? '',
     imageUrl: raw.image_url || undefined,
+    // Prefer nested products length when present because *_count fields can be stale.
+    productCount: nestedProducts ?? fallbackCount,
     createdAt: raw.inserted_at || undefined,
   }
 }

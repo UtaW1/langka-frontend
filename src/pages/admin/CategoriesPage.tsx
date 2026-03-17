@@ -10,6 +10,7 @@ import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
+import { formatDate } from '@/utils'
 import { toIsoRange } from '@/utils/dateRange'
 import type { Category, CreateCategoryRequest } from '@/types'
 
@@ -68,6 +69,16 @@ export function CategoriesPage() {
       key: 'description',
       header: 'Description',
       render: (c) => <span className="text-stone-600">{c.description || '—'}</span>,
+    },
+    {
+      key: 'productCount',
+      header: 'Products',
+      render: (c) => <span className="text-stone-700">{c.productCount ?? 0}</span>,
+    },
+    {
+      key: 'createdAt',
+      header: 'Added',
+      render: (c) => <span className="text-stone-500">{c.createdAt ? formatDate(c.createdAt) : '—'}</span>,
     },
     {
       key: 'actions',

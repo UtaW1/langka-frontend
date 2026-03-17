@@ -10,6 +10,7 @@ import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
+import { formatDate } from '@/utils'
 import { toIsoRange } from '@/utils/dateRange'
 import type { CreatePromotionRequest, Promotion } from '@/types'
 
@@ -99,6 +100,11 @@ export function PromotionsPage() {
           {p.status}
         </span>
       ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Added',
+      render: (p) => <span className="text-stone-500">{p.createdAt ? formatDate(p.createdAt) : '—'}</span>,
     },
     {
       key: 'actions',

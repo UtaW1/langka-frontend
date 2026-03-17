@@ -119,7 +119,7 @@ export function SeatingTablesPage() {
     {
       key: 'createdAt',
       header: 'Created',
-      render: (table) => <span className="text-stone-600">{formatDate(table.createdAt)}</span>,
+      render: (table) => <span className="text-stone-600">{table.createdAt ? formatDate(table.createdAt) : '—'}</span>,
     },
     {
       key: 'transactions',

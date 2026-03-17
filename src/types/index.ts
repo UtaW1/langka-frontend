@@ -61,6 +61,7 @@ export interface Category {
   name: string
   description: string
   imageUrl?: string
+  productCount?: number
   createdAt: string
 }
 

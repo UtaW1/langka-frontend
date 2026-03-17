@@ -7,7 +7,7 @@ import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
 import { FilterSelect } from '@/components/FilterSelect'
-import { formatPrice } from '@/utils'
+import { formatDate, formatPrice } from '@/utils'
 import { toIsoRange } from '@/utils/dateRange'
 import type { Product, CreateProductRequest } from '@/types'
 import { usePublicBucketAsset } from '../../hooks/usePublicBucketAsset'
@@ -197,6 +197,11 @@ export function ProductsPage() {
             Unavailable
           </span>
         ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Added',
+      render: (p) => <span className="text-stone-500">{p.createdAt ? formatDate(p.createdAt) : '—'}</span>,
     },
     {
       key: 'actions',
