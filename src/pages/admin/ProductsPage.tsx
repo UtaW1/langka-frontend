@@ -11,6 +11,8 @@ import type { Product, CreateProductRequest } from '@/types'
 import { usePublicBucketAsset } from '../../hooks/usePublicBucketAsset'
 import toast from 'react-hot-toast'
 
+type RemovedFilterValue = 'all' | 'active' | 'removed'
+
 function ProductThumb({ product }: { product: Product }) {
   const { data: resolvedImageUrl } = usePublicBucketAsset(product.imageUrl, 'product-images', {
     width: 72,
@@ -51,6 +53,10 @@ export function ProductsPage() {
   const [editTarget, setEditTarget] = useState<Product | null>(null)
   const [form, setForm] = useState<ProductFormState>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [removedFilter, setRemovedFilter] = useState<RemovedFilterValue>('all')
+
+  const isRemovedFilter =
+    removedFilter === 'active' ? 'no' : removedFilter === 'removed' ? 'yes' : null
 
   const {
     data,
@@ -58,7 +64,7 @@ export function ProductsPage() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useInfiniteProducts()
+  } = useInfiniteProducts({ isRemoved: isRemovedFilter })
   const { data: catData } = useCategories()
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
@@ -216,9 +222,26 @@ export function ProductsPage() {
           <h1 className="font-serif text-2xl font-semibold text-stone-800">Products</h1>
           <p className="mt-0.5 text-sm text-stone-400">{total} items on the menu</p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> Add product
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="flex items-center gap-2">
+            <label htmlFor="product-removed-filter" className="text-sm font-medium text-stone-600">
+              Visibility
+            </label>
+            <select
+              id="product-removed-filter"
+              value={removedFilter}
+              onChange={(e) => setRemovedFilter(e.target.value as RemovedFilterValue)}
+              className="rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-700 outline-none focus:border-coffee-400"
+            >
+              <option value="all">All products</option>
+              <option value="active">Available only</option>
+              <option value="removed">Removed only</option>
+            </select>
+          </div>
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4" /> Add product
+          </Button>
+        </div>
       </div>
 
       <Table
@@ -339,8 +362,8 @@ export function ProductsPage() {
       >
         <p className="mb-5 text-sm text-stone-600">
           Remove <span className="font-semibold">{deleteTarget?.name}</span>? This performs a soft
-          delete by setting <code>removed_datetime</code>, and the product will be hidden from list
-          endpoints.
+          delete by setting <code>removed_datetime</code>, and you can show it again from the removed
+          products filter.
         </p>
         <div className="flex flex-wrap justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteTarget(null)}>

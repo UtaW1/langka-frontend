@@ -5,20 +5,32 @@ import type { CreateProductRequest, PaginationParams, UpdateProductRequest } fro
 
 export const PRODUCTS_KEY = 'products'
 
-export function useProducts(params?: PaginationParams & { categoryId?: string }) {
+type ProductQueryParams = PaginationParams & {
+  categoryId?: string
+  isRemoved?: 'yes' | 'no' | null
+}
+
+export function useProducts(params?: ProductQueryParams) {
   return useQuery({
     queryKey: [PRODUCTS_KEY, params],
-    queryFn: () => productsApi.list(params),
+    queryFn: () => productsApi.list({ isRemoved: 'no', ...params }),
   })
 }
 
 const INFINITE_PAGE_SIZE = 20
 
-export function useInfiniteProducts(params?: Omit<PaginationParams, 'page_number' | 'page_size'> & { categoryId?: string }) {
+export function useInfiniteProducts(
+  params?: Omit<ProductQueryParams, 'page_number' | 'page_size'>,
+) {
   return useInfiniteQuery({
     queryKey: [PRODUCTS_KEY, 'infinite', params],
     queryFn: ({ pageParam }) =>
-      productsApi.list({ ...params, page_number: pageParam as number, page_size: INFINITE_PAGE_SIZE }),
+      productsApi.list({
+        isRemoved: 'no',
+        ...params,
+        page_number: pageParam as number,
+        page_size: INFINITE_PAGE_SIZE,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((acc, p) => acc + p.data.length, 0)

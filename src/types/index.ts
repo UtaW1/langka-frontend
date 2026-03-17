@@ -81,6 +81,7 @@ export interface Product {
   categoryId: string
   category?: Category
   available: boolean
+  removedDatetime?: string
   createdAt: string
 }
 

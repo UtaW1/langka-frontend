@@ -12,10 +12,14 @@ type ProductListParams = PaginationParams & {
   categoryId?: string
   category_id?: string
   product_category_id?: string
+  isRemoved?: 'yes' | 'no' | null
+  is_removed?: 'yes' | 'no' | null
 }
 
 // convert raw backend payload into UI-friendly Product
 function normalize(raw: any): Product {
+  const removedDatetime = raw.removed_datetime ?? raw.removedDatetime ?? undefined
+
   return {
     id: String(raw.id),
     name: raw.name,
@@ -32,7 +36,8 @@ function normalize(raw: any): Product {
           description: raw.categories.description ?? '',
         }
       : undefined,
-    available: raw.available ?? true,
+    available: raw.available ?? !removedDatetime,
+    removedDatetime,
     createdAt: raw.inserted_at || raw.createdAt,
   }
 }
@@ -46,6 +51,7 @@ export const productsApi = {
           ...params,
           category_id: params?.category_id ?? params?.categoryId,
           product_category_id: params?.product_category_id ?? params?.categoryId,
+          is_removed: params ? (Object.prototype.hasOwnProperty.call(params, 'is_removed') ? params.is_removed : params.isRemoved) : undefined,
         }),
       })
       .then(r => { 
