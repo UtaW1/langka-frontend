@@ -1,0 +1,10 @@
+langkacafe.online {
+    encode gzip
+
+    # API requests go to Phoenix backend.
+    @api path /api*
+    reverse_proxy @api app:4000
+
+    # Everything else serves the React app.
+    reverse_proxy frontend:80
+}
