@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts'
+import { useInfiniteProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts'
 import { useCategories } from '@/hooks/useCategories'
 import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
@@ -52,14 +52,37 @@ export function ProductsPage() {
   const [form, setForm] = useState<ProductFormState>(EMPTY_FORM)
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
 
-  const { data, isLoading } = useProducts()
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteProducts()
   const { data: catData } = useCategories()
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
   const deleteProduct = useDeleteProduct()
 
   const categories = catData?.data ?? []
-  const products = data?.data ?? []
+  const products = data?.pages.flatMap((p) => p.data) ?? []
+  const total = data?.pages[0]?.total ?? 0
+
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0.1 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   function openCreate() {
     setEditTarget(null)
@@ -191,7 +214,7 @@ export function ProductsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-serif text-2xl font-semibold text-stone-800">Products</h1>
-          <p className="mt-0.5 text-sm text-stone-400">{data?.total ?? 0} items on the menu</p>
+          <p className="mt-0.5 text-sm text-stone-400">{total} items on the menu</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Add product
@@ -205,6 +228,12 @@ export function ProductsPage() {
         keyExtractor={(p) => p.id}
         emptyMessage="No products yet. Add your first item."
       />
+      <div ref={sentinelRef} className="h-4" />
+      {isFetchingNextPage && (
+        <div className="flex justify-center py-4">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+        </div>
+      )}
 
       {/* Create / Edit Modal */}
       <Modal

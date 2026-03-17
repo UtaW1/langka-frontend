@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { productsApi } from '@/api/products'
 import type { CreateProductRequest, PaginationParams, UpdateProductRequest } from '@/types'
@@ -9,6 +9,21 @@ export function useProducts(params?: PaginationParams & { categoryId?: string })
   return useQuery({
     queryKey: [PRODUCTS_KEY, params],
     queryFn: () => productsApi.list(params),
+  })
+}
+
+const INFINITE_PAGE_SIZE = 20
+
+export function useInfiniteProducts(params?: Omit<PaginationParams, 'page_number' | 'page_size'> & { categoryId?: string }) {
+  return useInfiniteQuery({
+    queryKey: [PRODUCTS_KEY, 'infinite', params],
+    queryFn: ({ pageParam }) =>
+      productsApi.list({ ...params, page_number: pageParam as number, page_size: INFINITE_PAGE_SIZE }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((acc, p) => acc + p.data.length, 0)
+      return loaded < lastPage.total ? allPages.length : undefined
+    },
   })
 }
 
