@@ -6,6 +6,7 @@ import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Modal } from '@/components/Modal'
+import { FilterSelect } from '@/components/FilterSelect'
 import { formatPrice } from '@/utils'
 import type { Product, CreateProductRequest } from '@/types'
 import { usePublicBucketAsset } from '../../hooks/usePublicBucketAsset'
@@ -222,25 +223,29 @@ export function ProductsPage() {
           <h1 className="font-serif text-2xl font-semibold text-stone-800">Products</h1>
           <p className="mt-0.5 text-sm text-stone-400">{total} items on the menu</p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <div className="flex items-center gap-2">
-            <label htmlFor="product-removed-filter" className="text-sm font-medium text-stone-600">
-              Visibility
-            </label>
-            <select
-              id="product-removed-filter"
-              value={removedFilter}
-              onChange={(e) => setRemovedFilter(e.target.value as RemovedFilterValue)}
-              className="rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-700 outline-none focus:border-coffee-400"
-            >
-              <option value="all">All products</option>
-              <option value="active">Available only</option>
-              <option value="removed">Removed only</option>
-            </select>
-          </div>
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Add product
-          </Button>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4" /> Add product
+        </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-stone-800">Listing Filters</h2>
+          <p className="text-xs text-stone-500">These filters apply to the product table only.</p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <FilterSelect
+            id="product-removed-filter"
+            label="Filter by Visibility"
+            value={removedFilter}
+            onChange={(next) => setRemovedFilter(next as RemovedFilterValue)}
+            options={[
+              { value: 'all', label: 'All products' },
+              { value: 'active', label: 'Available only' },
+              { value: 'removed', label: 'Removed only' },
+            ]}
+          />
         </div>
       </div>
 

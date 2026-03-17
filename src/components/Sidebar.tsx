@@ -21,7 +21,7 @@ const navItems = [
   { to: '/admin/seating-tables', label: 'Seating Tables', icon: QrCode },
   { to: '/admin/promotions', label: 'Promotions', icon: Percent },
   { to: '/admin/transactions', label: 'Transactions', icon: CreditCard },
-  { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/users', label: 'Customers', icon: Users },
   { to: '/admin/employees', label: 'Employees', icon: UserCog },
   { to: '/admin/inventory', label: 'Inventory', icon: Package },
 ]

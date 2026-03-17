@@ -5,6 +5,7 @@ import { useEmployees } from '@/hooks/useEmployees'
 import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { FilterSelect } from '@/components/FilterSelect'
 import { formatPrice, formatDate, formatPhone } from '@/utils'
 import type { Transaction } from '@/types'
 import toast from 'react-hot-toast'
@@ -238,35 +239,30 @@ export function TransactionsPage() {
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-stone-700">Filter by Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'pending' | 'completed' | 'cancelled' | '')}
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-coffee-400"
-            >
-              <option value="">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
+          <FilterSelect
+            label="Filter by Status"
+            value={statusFilter}
+            onChange={(next) => setStatusFilter(next as 'pending' | 'completed' | 'cancelled' | '')}
+            options={[
+              { value: '', label: 'All statuses' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'cancelled', label: 'Cancelled' },
+            ]}
+          />
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-stone-700">Filter by Employee</label>
-            <select
-              value={employeeIdFilter}
-              onChange={(e) => setEmployeeIdFilter(e.target.value)}
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-coffee-400"
-            >
-              <option value="">All employees</option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            label="Filter by Employee"
+            value={employeeIdFilter}
+            onChange={setEmployeeIdFilter}
+            options={[
+              { value: '', label: 'All employees' },
+              ...employees.map((employee) => ({
+                value: employee.id,
+                label: employee.name,
+              })),
+            ]}
+          />
         </div>
       </div>
 
