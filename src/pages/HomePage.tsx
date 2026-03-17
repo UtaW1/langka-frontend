@@ -32,7 +32,7 @@ export function HomePage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/menu">
-                <Button size="lg" className="bg-white text-coffee-800 hover:bg-cream-100">
+                <Button size="lg">
                   View Menu <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -113,7 +113,7 @@ export function HomePage() {
             Browse the full menu and scan the QR on your table when you're ready to order.
           </p>
           <Link to="/menu">
-            <Button size="lg" className="bg-white text-coffee-800 hover:bg-cream-100">
+            <Button size="lg">
               View Full Menu <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>

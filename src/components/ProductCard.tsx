@@ -66,9 +66,7 @@ export function ProductCard({ product, canAdd = true, onAdd }: ProductCardProps)
             >
               <Plus className="h-4 w-4" />
             </button>
-          ) : (
-            <span className="text-xs font-medium text-stone-400">View only</span>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
