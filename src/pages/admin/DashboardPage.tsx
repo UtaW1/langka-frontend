@@ -54,6 +54,8 @@ interface MetricBarChartItem {
   id: string
   label: string
   value: number
+  statusLabel?: string
+  statusClassName?: string
 }
 
 interface MetricBarChartProps {
@@ -107,7 +109,19 @@ function MetricBarChart({
             return (
               <div key={item.id}>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-medium text-stone-700">{item.label}</p>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <p className="truncate text-sm font-medium text-stone-700">{item.label}</p>
+                    {item.statusLabel ? (
+                      <span
+                        className={[
+                          'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+                          item.statusClassName ?? 'bg-stone-100 text-stone-600',
+                        ].join(' ')}
+                      >
+                        {item.statusLabel}
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="text-xs font-semibold text-stone-500">
                     {item.value.toLocaleString()} {valueLabel}
                   </p>
@@ -388,11 +402,22 @@ export function DashboardPage() {
   const promotionUsageChartItems: MetricBarChartItem[] = (promotionUsageMetrics ?? [])
     .slice()
     .sort((a: PromotionUsageMetric, b: PromotionUsageMetric) => b.totalAppliedTransactions - a.totalAppliedTransactions)
-    .map((metric: PromotionUsageMetric) => ({
-      id: metric.promotionId,
-      label: `${metric.discountAsPercent}% off at ${metric.transactionCountToGetDiscount} orders`,
-      value: metric.totalAppliedTransactions,
-    }))
+    .map((metric: PromotionUsageMetric) => {
+      const normalizedStatus = (metric.status ?? '').toLowerCase()
+      const isRetired = normalizedStatus === 'retired'
+
+      return {
+        id: metric.promotionId,
+        label: `${metric.discountAsPercent}% off at ${metric.transactionCountToGetDiscount} orders`,
+        value: metric.totalAppliedTransactions,
+        statusLabel: normalizedStatus ? (isRetired ? 'Retired' : 'Active') : undefined,
+        statusClassName: normalizedStatus
+          ? isRetired
+            ? 'bg-stone-100 text-stone-600'
+            : 'bg-green-50 text-green-700'
+          : undefined,
+      }
+    })
 
   const promotionProgressionItems: PromotionProgressionMetric[] = (promotionProgressionMetrics ?? [])
     .slice()

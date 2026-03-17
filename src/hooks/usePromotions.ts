@@ -12,6 +12,14 @@ export function usePromotions(params?: PaginationParams) {
   })
 }
 
+export function usePromotion(id?: string) {
+  return useQuery({
+    queryKey: [PROMOTIONS_KEY, 'detail', id],
+    queryFn: () => promotionsApi.get(id || ''),
+    enabled: !!id,
+  })
+}
+
 export function useCreatePromotion() {
   const qc = useQueryClient()
   return useMutation({

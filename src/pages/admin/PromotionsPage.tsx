@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import {
   useCreatePromotion,
+  usePromotion,
   usePromotions,
   useRemovePromotion,
   useUpdatePromotion,
@@ -11,7 +12,7 @@ import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { FilterSelect } from '@/components/FilterSelect'
 import { Modal } from '@/components/Modal'
-import { formatDate } from '@/utils'
+import { formatDate, formatPrice } from '@/utils'
 import { toIsoRange } from '@/utils/dateRange'
 import type { CreatePromotionRequest, Promotion } from '@/types'
 import toast from 'react-hot-toast'
@@ -32,11 +33,17 @@ export function PromotionsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Promotion | null>(null)
   const [removeTarget, setRemoveTarget] = useState<Promotion | null>(null)
+  const [transactionsTargetId, setTransactionsTargetId] = useState<string | null>(null)
   const [form, setForm] = useState<PromotionFormState>(EMPTY_FORM)
   const [startDatetime, setStartDatetime] = useState('')
   const [endDatetime, setEndDatetime] = useState('')
 
   const { data, isLoading } = usePromotions(toIsoRange(startDatetime, endDatetime))
+  const {
+    data: promotionDetail,
+    isLoading: isPromotionDetailLoading,
+    isError: isPromotionDetailError,
+  } = usePromotion(transactionsTargetId ?? undefined)
   const createPromotion = useCreatePromotion()
   const updatePromotion = useUpdatePromotion()
   const removePromotion = useRemovePromotion()
@@ -140,6 +147,13 @@ export function PromotionsPage() {
       render: (p) => (
         <div className="flex items-center justify-end gap-2">
           <button
+            type="button"
+            onClick={() => setTransactionsTargetId(p.id)}
+            className="rounded-lg border border-stone-200 px-2.5 py-1 text-xs font-medium text-stone-600 hover:border-coffee-300 hover:text-coffee-700"
+          >
+            View Transactions
+          </button>
+          <button
             onClick={() => openEdit(p)}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
           >
@@ -196,6 +210,41 @@ export function PromotionsPage() {
         keyExtractor={(p) => p.id}
         emptyMessage="No promotions found."
       />
+
+      <Modal
+        open={!!transactionsTargetId}
+        onClose={() => setTransactionsTargetId(null)}
+        title={`Promotion Transactions${promotionDetail ? ` · ${promotionDetail.discountAsPercent}%` : ''}`}
+      >
+        {isPromotionDetailLoading ? (
+          <p className="text-sm text-stone-500">Loading promotion transactions…</p>
+        ) : isPromotionDetailError || !promotionDetail ? (
+          <p className="text-sm text-red-500">Failed to load promotion transactions.</p>
+        ) : promotionDetail.transactions.length === 0 ? (
+          <p className="text-sm text-stone-500">No successful transactions found for this promotion yet.</p>
+        ) : (
+          <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+            {promotionDetail.transactions.map((tx) => (
+              <div key={tx.id} className="rounded-xl border border-stone-100 bg-stone-50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-xs text-stone-500">#{tx.id.slice(-8).toUpperCase()}</p>
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium capitalize text-stone-600">
+                    {tx.status}
+                  </span>
+                </div>
+                <div className="mt-2 grid gap-1 text-xs text-stone-600 md:grid-cols-2">
+                  <p>Employee: {tx.employee || '—'}</p>
+                  <p>User: {tx.userName || '—'}</p>
+                  <p>Table: {tx.tableNumber || '—'}</p>
+                  <p>Date: {tx.createdAt ? formatDate(tx.createdAt) : '—'}</p>
+                  <p>Total: <span className="font-semibold text-stone-800">{formatPrice(tx.billPriceUsd)}</span></p>
+                  <p>Discount: <span className="font-semibold text-emerald-700">-{formatPrice(tx.discountAmountUsd ?? 0)}</span></p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       <Modal
         open={modalOpen}

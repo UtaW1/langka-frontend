@@ -39,6 +39,7 @@ function normalizePromotionUsageMetric(raw: any): PromotionUsageMetric {
     transactionCountToGetDiscount: Number(raw.transaction_count_to_get_discount ?? 0),
     discountAsPercent: Number(raw.discount_as_percent ?? 0),
     totalAppliedTransactions: Number(raw.total_applied_transactions ?? 0),
+    status: raw.status == null ? undefined : String(raw.status).toLowerCase(),
   }
 }
 

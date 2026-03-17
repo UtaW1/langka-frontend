@@ -229,6 +229,7 @@ export interface PromotionUsageMetric {
   transactionCountToGetDiscount: number
   discountAsPercent: number
   totalAppliedTransactions: number
+  status?: string
 }
 
 export interface PromotionProgressionMetric {
@@ -317,6 +318,14 @@ export interface CreatePromotionRequest {
 }
 
 export interface UpdatePromotionRequest extends Partial<CreatePromotionRequest> {}
+
+export interface PromotionDetail {
+  id: string
+  transactionCountToGetDiscount: number
+  discountAsPercent: number
+  status: string
+  transactions: Transaction[]
+}
 
 export interface PromotionPreviewPromotion {
   id: string
