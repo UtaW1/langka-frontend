@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
 import { useProducts } from '@/hooks/useProducts'
 import { ProductCard } from '@/components/ProductCard'
+import { Button } from '@/components/Button'
 
 export function MenuPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [pageNumber, setPageNumber] = useState(0)
+  const pageSize = 16
 
   const { data: catData } = useCategories()
   const categories = catData?.data ?? []
@@ -14,8 +17,18 @@ export function MenuPage() {
   const { data: productData, isLoading } = useProducts({
     categoryId: activeCategory ?? undefined,
     search: search || undefined,
+    page_number: pageNumber,
+    page_size: pageSize,
   })
   const products = productData?.data ?? []
+  const totalProducts = productData?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize))
+  const canGoPrev = pageNumber > 0
+  const canGoNext = pageNumber + 1 < totalPages
+
+  useEffect(() => {
+    setPageNumber(0)
+  }, [activeCategory, search])
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -112,6 +125,32 @@ export function MenuPage() {
             ))}
           </div>
         )
+      )}
+
+      {!isLoading && products.length > 0 && (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-100 bg-white px-4 py-3">
+          <p className="text-xs text-stone-500">
+            Page {pageNumber + 1} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!canGoPrev}
+              onClick={() => setPageNumber((prev) => Math.max(0, prev - 1))}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!canGoNext}
+              onClick={() => setPageNumber((prev) => prev + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )
