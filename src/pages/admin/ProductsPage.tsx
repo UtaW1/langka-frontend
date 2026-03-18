@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
-import { useInfiniteProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts'
+import { Plus, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+import {
+  useInfiniteProducts,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+  useReinstateProduct,
+} from '@/hooks/useProducts'
 import { useCategories } from '@/hooks/useCategories'
 import { Table, type Column } from '@/components/Table'
 import { Button } from '@/components/Button'
@@ -36,7 +42,6 @@ interface ProductFormState {
   description: string
   price: string
   categoryId: string
-  available: boolean
   productImage: File | null
 }
 
@@ -46,7 +51,6 @@ const EMPTY_FORM: ProductFormState = {
   description: '',
   price: '',
   categoryId: '',
-  available: true,
   productImage: null,
 }
 
@@ -75,6 +79,7 @@ export function ProductsPage() {
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
   const deleteProduct = useDeleteProduct()
+  const reinstateProduct = useReinstateProduct()
 
   const categories = catData?.data ?? []
   const products = data?.pages.flatMap((p) => p.data) ?? []
@@ -110,7 +115,6 @@ export function ProductsPage() {
       description: product.description,
       price: String(product.price),
       categoryId: product.categoryId,
-      available: product.available,
       productImage: null,
     })
     setModalOpen(true)
@@ -139,7 +143,6 @@ export function ProductsPage() {
           description: form.description,
           price: parsedPrice,
           categoryId: form.categoryId,
-          available: form.available,
           product_image: form.productImage ?? undefined,
         },
       })
@@ -160,6 +163,10 @@ export function ProductsPage() {
     if (!deleteTarget) return
     await deleteProduct.mutateAsync(deleteTarget.id)
     setDeleteTarget(null)
+  }
+
+  async function handleReinstate(product: Product) {
+    await reinstateProduct.mutateAsync(product.id)
   }
 
   const columns: Column<Product>[] = [
@@ -214,18 +221,30 @@ export function ProductsPage() {
       header: '',
       render: (p) => (
         <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={() => openEdit(p)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => setDeleteTarget(p)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-red-50 hover:text-red-500"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          {p.removedDatetime ? (
+            <button
+              onClick={() => handleReinstate(p)}
+              className="flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium text-stone-500 hover:bg-green-50 hover:text-green-700"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reinstate
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => openEdit(p)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setDeleteTarget(p)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-red-50 hover:text-red-500"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
         </div>
       ),
     },
@@ -367,17 +386,6 @@ export function ProductsPage() {
               })),
             ]}
           />
-          {editTarget && (
-            <label className="flex items-center gap-2 text-sm text-stone-700">
-              <input
-                type="checkbox"
-                checked={form.available}
-                onChange={(e) => setForm((f) => ({ ...f, available: e.target.checked }))}
-                className="rounded"
-              />
-              Available
-            </label>
-          )}
           <div className="flex flex-wrap justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel

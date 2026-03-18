@@ -118,4 +118,7 @@ export const productsApi = {
 
   delete: (id: string) =>
     apiClient.delete(`/admin/products/${id}`).then((r) => r.data),
+
+  reinstate: (id: string) =>
+    apiClient.patch(`/admin/products/${id}/reinstate`).then((r) => r.data),
 }

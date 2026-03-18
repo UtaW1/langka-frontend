@@ -83,3 +83,15 @@ export function useDeleteProduct() {
     onError: () => toast.error('Failed to remove product.'),
   })
 }
+
+export function useReinstateProduct() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => productsApi.reinstate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [PRODUCTS_KEY] })
+      toast.success('Product reinstated.')
+    },
+    onError: () => toast.error('Failed to reinstate product.'),
+  })
+}
