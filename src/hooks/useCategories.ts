@@ -5,7 +5,11 @@ import type { CreateCategoryRequest, PaginationParams } from '@/types'
 
 export const CATEGORIES_KEY = 'categories'
 
-export function useCategories(params?: PaginationParams) {
+type CategoryQueryParams = PaginationParams & {
+  isRemoved?: 'yes' | 'no' | null
+}
+
+export function useCategories(params?: CategoryQueryParams) {
   return useQuery({
     queryKey: [CATEGORIES_KEY, params],
     queryFn: () => categoriesApi.list(params),
@@ -46,5 +50,17 @@ export function useDeleteCategory() {
       toast.success('Category removed.')
     },
     onError: () => toast.error('Failed to remove category.'),
+  })
+}
+
+export function useReinstateCategory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => categoriesApi.reinstate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [CATEGORIES_KEY] })
+      toast.success('Category reinstated.')
+    },
+    onError: () => toast.error('Failed to reinstate category.'),
   })
 }
